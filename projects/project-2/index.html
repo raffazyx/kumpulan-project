@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JPG to PDF — Rapzwy</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#131b30;--line:#283653;--text:#eef3ff;--muted:#a5b2cc;--accent:#7c9cff;--accent2:#9c7cff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top left,#1c2b50 0,transparent 45%),var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);padding:24px}
+main{max-width:900px;margin:auto}.brand{color:#b6c5ff;font-weight:750;letter-spacing:.12em;font-size:.78rem}.hero{margin:14px 0 22px}.hero h1{font-size:clamp(2rem,6vw,3.3rem);line-height:1.06;margin:0 0 12px}.hero p{color:var(--muted);line-height:1.6;margin:0;max-width:650px}
+.panel{background:linear-gradient(145deg,rgba(25,36,62,.96),rgba(15,22,40,.96));border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 18px 55px #0003}
+.drop{border:1.5px dashed #52658d;border-radius:17px;padding:28px 16px;text-align:center;background:#0c1428;cursor:pointer;transition:.2s}.drop:hover,.drop.drag{border-color:var(--accent);background:#172341}.drop .emoji{font-size:2.2rem}.drop h2{font-size:1.08rem;margin:8px 0}.drop p{color:var(--muted);font-size:.9rem;margin:0}
+input[type=file]{display:none}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}.field{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:.83rem;flex:1;min-width:150px}select{width:100%;background:#0b1325;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px}
+button{border:0;border-radius:11px;padding:12px 16px;font-weight:700;font-size:.92rem;cursor:pointer;transition:transform .15s,opacity .15s}button:active{transform:scale(.98)}.primary{background:linear-gradient(100deg,var(--accent),var(--accent2));color:#080d1b}.secondary{background:#202c47;color:var(--text);border:1px solid #354565}.danger{background:#3a2130;color:#ffc2d3;border:1px solid #61364a}.actions{display:flex;gap:10px;flex-wrap:wrap}.status{color:var(--muted);font-size:.88rem;margin:12px 0 0;min-height:1.3em}.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:12px;margin-top:18px}.item{background:#0c1427;border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative;animation:up .22s ease}.item img{width:100%;height:130px;object-fit:contain;background:#080d18;display:block}.item .meta{padding:9px;font-size:.78rem;color:var(--muted);overflow-wrap:anywhere}.item .num{color:#c6d2ff;font-weight:800}.item button{padding:5px 8px;font-size:.75rem;position:absolute;right:7px;top:7px;background:#101a30;color:#fff;border:1px solid #607091}.empty{color:var(--muted);text-align:center;padding:22px 0}.foot{color:#7f8eaa;font-size:.78rem;text-align:center;margin:18px 0 0}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+/* Responsive layout fixes for narrow mobile screens */
+html{width:100%;overflow-x:hidden}
+body{width:100%;overflow-x:hidden}
+main{width:100%;min-width:0}
+.panel{min-width:0;overflow:hidden}
+.drop{display:block;width:100%;min-width:0;overflow-wrap:anywhere}
+.drop p{overflow-wrap:anywhere}
+.field{min-width:0}
+select{min-width:0;max-width:100%;font:inherit;font-size:.9rem}
+.actions{width:100%;min-width:0}
+.actions button{min-width:0;overflow-wrap:anywhere;white-space:normal}
+@media(max-width:600px){
+ body{padding:12px}
+ .hero{margin:12px 0 18px}
+ .hero h1{font-size:clamp(2rem,9vw,2.7rem)}
+ .hero p{font-size:1rem;line-height:1.55}
+ .panel{padding:14px;border-radius:18px}
+ .drop{padding:22px 12px;border:1.5px dashed #52658d;border-radius:14px}
+ .toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:15px 0}
+ .field{width:100%;font-size:.9rem}
+ select{padding:12px 10px}
+ .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .actions button{width:100%;padding:12px 8px;font-size:.88rem;min-height:48px}
+ .actions button:first-child{grid-column:1/-1}
+ .list{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .item img{height:115px}
+ .foot{line-height:1.5}
+}
+@media(min-width:420px) and (max-width:600px){
+ .toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .field:last-child{grid-column:1/-1}
+}
+@media(max-width:360px){
+ body{padding:8px}
+ .panel{padding:10px}
+ .actions{grid-template-columns:minmax(0,1fr)}
+ .actions button:first-child{grid-column:auto}
+ .list{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Hilangkan highlight biru/toska saat tombol disentuh di Android */
+*{-webkit-tap-highlight-color:transparent}
+button,select,label.drop,input{ -webkit-tap-highlight-color:transparent; }
+button:active,.drop:active{filter:none;box-shadow:none}
+button:focus:not(:focus-visible),select:focus:not(:focus-visible),.drop:focus:not(:focus-visible){outline:none;box-shadow:none}
+
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">RAPZWY TOOLS</div>
+  <header class="hero"><h1>JPG to PDF<span style="color:#91aaff">.</span></h1><p>Convert to PDF by Rapzwy Project.</p></header>
+  <section class="panel">
+    <label class="drop" id="drop" for="files">
+      <div class="emoji"></div><h2>Pilih atau masukkan foto</h2><p></p>
+    </label>
+    <input id="files" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+    <div class="toolbar">
+      <label class="field">Ukuran halaman
+        <select id="paper"><option value="a4">A4</option><option value="letter">Letter</option><option value="fit">Sesuaikan dengan foto</option></select>
+      </label>
+      <label class="field">Orientasi halaman
+        <select id="orientation"><option value="auto">Otomatis mengikuti foto</option><option value="portrait">Potret</option><option value="landscape">Lanskap</option></select>
+      </label>
+      <label class="field">Margin
+        <select id="margin"><option value="0">Tanpa margin</option><option value="10" selected>Normal (10 mm)</option><option value="20">Lebar (20 mm)</option></select>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="primary" id="make" disabled>⬇ Buat PDF</button>
+      <button class="secondary" id="add">＋ Tambah foto</button>
+      <button class="danger" id="clear">Hapus semua</button>
+    </div>
+    <p class="status" id="status" aria-live="polite">Belum ada foto dipilih.</p>
+    <div id="list" class="list"></div>
+    <p class="foot"></p>
+  </section>
+  <section class="panel" style="margin-top:18px">
+    <header style="margin-bottom:14px"><h2 style="margin:0 0 8px">Kompres PDF</h2><p style="color:var(--muted);margin:0;line-height:1.55"></p></header>
+    <label class="drop" id="pdfDrop" for="pdfInput"><div class="emoji"></div><h2>Pilih file PDF</h2><p></p></label>
+    <input id="pdfInput" type="file" accept="application/pdf,.pdf">
+    <div class="toolbar">
+      <label class="field">Batas ukuran file hasil
+        <select id="targetSize"><option value="1">Maksimal 1 MB</option><option value="2">Maksimal 2 MB</option><option value="3">Maksimal 3 MB</option><option value="4">Maksimal 4 MB</option><option value="5" selected>Maksimal 5 MB</option><option value="6">Maksimal 6 MB</option><option value="7">Maksimal 7 MB</option><option value="8">Maksimal 8 MB</option><option value="9">Maksimal 9 MB</option><option value="10">Maksimal 10 MB</option></select>
+      </label>
+    </div>
+    <div class="actions"><button class="primary" id="compress" disabled>⚡ Kompres PDF & Download</button><button class="secondary" id="clearPdf">Hapus file</button></div>
+    <p class="status" id="pdfStatus" aria-live="polite">Belum ada PDF dipilih.</p>
+    <p class="foot"></p>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(() => {
+ const input=document.getElementById('files'),drop=document.getElementById('drop'),list=document.getElementById('list'),status=document.getElementById('status'),make=document.getElementById('make');
+ let photos=[],nextId=1;
+ const fmt=n=>n<1024*1024?Math.round(n/1024)+' KB':(n/1024/1024).toFixed(1)+' MB';
+ function addFiles(files){
+  const valid=[...files].filter(f=>/^image\/(jpeg|png|webp)$/.test(f.type));
+  const rejected=files.length-valid.length;
+  valid.forEach(file=>photos.push({id:nextId++,file,url:URL.createObjectURL(file)}));
+  render();
+  if(rejected)status.textContent=`${valid.length} foto ditambahkan. ${rejected} file dilewati karena bukan JPG/PNG/WEBP.`;
+ }
+ function render(){
+  list.innerHTML='';
+  photos.forEach((p,i)=>{
+   const el=document.createElement('article');el.className='item';
+   const img=document.createElement('img');img.src=p.url;img.alt=p.file.name;
+   const del=document.createElement('button');del.textContent='✕';del.title='Hapus foto';del.setAttribute('aria-label','Hapus '+p.file.name);
+   del.onclick=()=>{URL.revokeObjectURL(p.url);photos=photos.filter(x=>x.id!==p.id);render()};
+   const meta=document.createElement('div');meta.className='meta';
+   const number=document.createElement('div');number.className='num';number.textContent=`Halaman ${i+1}`;
+   const name=document.createElement('div');name.textContent=p.file.name;
+   const size=document.createElement('div');size.textContent=fmt(p.file.size);
+   const controls=document.createElement('div');controls.style.cssText='display:flex;gap:5px;margin-top:8px';
+   [['↑',-1],['↓',1]].forEach(([label,delta])=>{const b=document.createElement('button');b.style.cssText='position:static;flex:1';b.textContent=label;b.disabled=(delta<0?i===0:i===photos.length-1);b.onclick=()=>{const j=i+delta;[photos[i],photos[j]]=[photos[j],photos[i]];render()};controls.appendChild(b)});
+   meta.append(number,name,size,controls);el.append(img,del,meta);list.appendChild(el);
+  });
+  make.disabled=!photos.length;
+  if(photos.length)status.textContent=`${photos.length} foto siap dijadikan ${photos.length} halaman PDF.`;
+  else status.textContent='Belum ada foto dipilih.';
+ }
+ input.addEventListener('change',e=>{addFiles([...e.target.files]);input.value=''});
+ document.getElementById('add').onclick=()=>input.click();
+ document.getElementById('clear').onclick=()=>{photos.forEach(p=>URL.revokeObjectURL(p.url));photos=[];render()};
+ ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));
+ ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));
+ drop.addEventListener('drop',e=>addFiles([...e.dataTransfer.files]));
+ function loadImage(file){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=URL.createObjectURL(file)})}
+ make.onclick=async()=>{
+  if(!photos.length)return;
+  if(!window.jspdf){status.textContent='Library PDF belum termuat. Periksa koneksi internet lalu muat ulang halaman.';return}
+  make.disabled=true;status.textContent='Sedang membuat PDF…';
+  try{
+   const {jsPDF}=window.jspdf;
+   let pdf=null;
+   for(let i=0;i<photos.length;i++){
+    const im=await loadImage(photos[i].file);
+    let pw,ph;const paper=document.getElementById('paper').value;
+    const orient=document.getElementById('orientation').value;
+    const landscape=orient==='landscape'||(orient==='auto'&&im.width>im.height);
+    if(paper==='fit'){pw=im.width*25.4/96;ph=im.height*25.4/96;if(orient==='landscape'&&ph>pw)[pw,ph]=[ph,pw];if(orient==='portrait'&&pw>ph)[pw,ph]=[ph,pw]}
+    else if(paper==='letter'){pw=landscape?279.4:215.9;ph=landscape?215.9:279.4}
+    else {pw=landscape?297:210;ph=landscape?210:297}
+    if(!pdf)pdf=new jsPDF({orientation:pw>ph?'landscape':'portrait',unit:'mm',format:[pw,ph],compress:true});
+    else pdf.addPage([pw,ph],pw>ph?'landscape':'portrait');
+    const margin=Number(document.getElementById('margin').value);
+    const maxW=Math.max(1,pw-2*margin),maxH=Math.max(1,ph-2*margin);
+    const scale=Math.min(maxW/im.width,maxH/im.height);
+    const w=im.width*scale,h=im.height*scale;
+    const x=(pw-w)/2,y=(ph-h)/2;
+    const canvas=document.createElement('canvas');canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(im,0,0);
+    const data=canvas.toDataURL('image/jpeg',0.92);
+    pdf.addImage(data,'JPEG',x,y,w,h,undefined,'FAST');
+    URL.revokeObjectURL(im.src);
+    status.textContent=`Memproses foto ${i+1} dari ${photos.length}…`;
+   }
+   pdf.save('foto-menjadi-pdf.pdf');status.textContent=`Selesai! ${photos.length} foto menjadi ${photos.length} halaman PDF.`;
+  }catch(err){console.error(err);status.textContent='Gagal membuat PDF. Coba foto lain atau kurangi jumlah foto.'}
+  finally{make.disabled=!photos.length}
+ };
+ render();
+ // PDF compression tool: rasterizes pages locally, then exports a smaller PDF.
+ const pdfInput=document.getElementById('pdfInput'),pdfDrop=document.getElementById('pdfDrop'),pdfStatus=document.getElementById('pdfStatus'),compressBtn=document.getElementById('compress');
+ let sourcePdf=null;
+ pdfInput.addEventListener('change',()=>{
+  sourcePdf=pdfInput.files&&pdfInput.files[0]?pdfInput.files[0]:null;
+  if(sourcePdf && sourcePdf.type!=='application/pdf' && !sourcePdf.name.toLowerCase().endsWith('.pdf')){sourcePdf=null;pdfStatus.textContent='File harus berformat PDF.';compressBtn.disabled=true;return}
+  compressBtn.disabled=!sourcePdf;
+  pdfStatus.textContent=sourcePdf?`${sourcePdf.name} · ${fmt(sourcePdf.size)} · siap dikompres.`:'Belum ada PDF dipilih.';
+ });
+ document.getElementById('clearPdf').onclick=()=>{sourcePdf=null;pdfInput.value='';compressBtn.disabled=true;pdfStatus.textContent='Belum ada PDF dipilih.'};
+ ['dragenter','dragover'].forEach(ev=>pdfDrop.addEventListener(ev,e=>{e.preventDefault();pdfDrop.classList.add('drag')}));
+ ['dragleave','drop'].forEach(ev=>pdfDrop.addEventListener(ev,e=>{e.preventDefault();pdfDrop.classList.remove('drag')}));
+ pdfDrop.addEventListener('drop',e=>{const f=[...e.dataTransfer.files].find(x=>x.type==='application/pdf'||x.name.toLowerCase().endsWith('.pdf'));if(f){sourcePdf=f;compressBtn.disabled=false;pdfStatus.textContent=`${f.name} · ${fmt(f.size)} · siap dikompres.`}else pdfStatus.textContent='Pilih file PDF yang valid.'});
+ compressBtn.onclick=async()=>{
+  if(!sourcePdf)return;
+  if(!window.jspdf||!window.pdfjsLib){pdfStatus.textContent='Library PDF belum termuat. Periksa koneksi internet lalu muat ulang halaman.';return}
+  compressBtn.disabled=true;
+  const original=sourcePdf;const targetMB=Number(document.getElementById('targetSize').value);const maxBytes=targetMB*1024*1024;
+  try{
+   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+   pdfStatus.textContent='Membaca PDF…';
+   const bytes=await original.arrayBuffer();const doc=await pdfjsLib.getDocument({data:bytes}).promise;
+   const {jsPDF}=window.jspdf;let output=null;
+   // A moderate render scale and JPEG quality prioritize a smaller file.
+   const scale=1.25;const quality=0.68;
+   for(let i=1;i<=doc.numPages;i++){
+    pdfStatus.textContent=`Mengompres halaman ${i} dari ${doc.numPages}…`;
+    const page=await doc.getPage(i);const viewport=page.getViewport({scale});
+    const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+    const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    await page.render({canvasContext:ctx,viewport,background:'rgb(255,255,255)'}).promise;
+    const img=canvas.toDataURL('image/jpeg',quality);
+    const view=page.getViewport({scale:1});const w=view.width*25.4/72,h=view.height*25.4/72;
+    if(!output)output=new jsPDF({orientation:w>h?'landscape':'portrait',unit:'mm',format:[w,h],compress:true});
+    else output.addPage([w,h],w>h?'landscape':'portrait');
+    output.addImage(img,'JPEG',0,0,w,h,undefined,'FAST');canvas.width=1;canvas.height=1;
+   }
+   const blob=output.output('blob');
+   if(blob.size>maxBytes){
+    pdfStatus.textContent=`Hasil ${fmt(blob.size)} masih melebihi batas ${targetMB} MB. Coba pilih batas lebih besar atau gunakan PDF dengan halaman lebih sedikit.`;
+    // Offer the compressed file anyway, so the user's work is not lost.
+   }else pdfStatus.textContent=`Selesai! Ukuran awal ${fmt(original.size)} · hasil ${fmt(blob.size)} · ${doc.numPages} halaman.`;
+   const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=original.name.replace(/\.pdf$/i,'')+'-compressed.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+  }catch(err){console.error(err);pdfStatus.textContent='Gagal memproses PDF. File mungkin rusak, terlindungi sandi, atau terlalu besar untuk memori perangkat.'}
+  finally{compressBtn.disabled=!sourcePdf}
+ };
+})();
+</script>
+</body></html>
